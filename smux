@@ -1,0 +1,44 @@
+#!/usr/bin/python
+import os
+import subprocess
+import argparse
+import getpass
+
+def get_node(jobid):
+    output = subprocess.check_output(['squeue','--job',"%s"%jobid,'-o','%B','-h'])
+    return output.strip()
+
+def get_job_name(jobid):
+    output = subprocess.check_output(['squeue','--job',"%s"%jobid,'-o','%j','-h'])
+    return output.strip()
+    
+
+def connectJob(args):
+    jobid=args.jobid[0]
+    node=get_node(jobid)
+    print node
+    name=get_job_name(jobid)
+    print name
+    #os.execv("/usr/bin/ssh",["ssh","%s"%node,"-t","tmux attach-session -t %s"%name])
+    os.execv("/usr/bin/ssh",["ssh",node,"-t","tmux attach-session -t %s"%name])
+
+def jobid(user,string):
+    output=subprocess.check_output(['squeue','-u',user,'-h','-o','%i %j']).splitlines()
+    for l in output:
+        if string in l:
+            jobid=l.split(' ')[0]
+            return jobid
+    msg="%s is not a job id or a job name"%string
+    raise argparse.ArgumentTypeError(msg)
+
+def main():
+    user=getpass.getuser()
+    parser=argparse.ArgumentParser()
+    subparser = parser.add_subparsers()
+    connect=subparser.add_parser('attach-session')
+    connect.add_argument('jobid',metavar="<jobid>", type=lambda x: jobid(user,x),nargs=1,help="A job ID or job name")
+    connect.set_defaults(func=connectJob)
+    args=parser.parse_args()
+    args.func(args)
+
+main()

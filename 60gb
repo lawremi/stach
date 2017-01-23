@@ -1,0 +1,19 @@
+#!/bin/bash
+#SBATCH --mincpus=16
+#SBATCH --ntasks=16
+#SBATCH --mem=60
+#SBATCH -p ubuntu
+#SBATCH --time=11-00:00:00
+. /usr/local/lmod/5.8.6/init/bash
+# PATH envirnoment variable is inherited from the login node, which runs CentOS and does not include /bin
+export PATH=$PATH:/bin
+export MODULEPATH=/usr/local/modules
+# Using the --rcfile to bash seems to be necessary to get lmod to load correctly
+# Using srun means we use our resource allocation
+#tmux new-session -d -s $SLURM_JOBID "bash --rcfile /usr/local/lmod/5.8.6/init/bash"
+tmux new-session -d -s $SLURM_JOB_NAME "bash --rcfile /usr/local/lmod/5.8.6/init/bash"
+# determine the process id of the tmux server
+pid=$( /bin/ps x | /bin/grep -i "[t]mux new-session -d -s" | sed 's/^\ *//' | cut -f 1 -d " " ) 
+ps x
+# Sleep until the tmux server exits
+while [ -e /proc/$pid ]; do sleep 5; done
