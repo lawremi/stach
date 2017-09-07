@@ -175,4 +175,7 @@ while [ -e /proc/$pid ]; do sleep 5; done
         waiting.set_defaults(func=Smux.whyAreWeWaiting)
         
         args=parser.parse_args()
-        args.func(args)
+        try:
+            args.func(args)
+        except Exception as e:
+            parser.print_help()

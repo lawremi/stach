@@ -1,2 +1,4 @@
-from . import Smux
-Smux.main()
+def main():
+    from . import Smux
+    Smux.main()
+main()
