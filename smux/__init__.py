@@ -16,6 +16,9 @@ class SlurmJob():
         self.jobname=jobname
         self.jobstate=jobstate
 
+class SmuxConnectionError(Exception):
+    pass
+
 class Smux():
     slurm_script=b"""#!/bin/bash
 tmux new-session -d -s $SLURM_JOB_NAME bash
@@ -119,6 +122,7 @@ while [ -e /proc/$pid ]; do sleep 5; done
 
     @classmethod
     def connectJob(cls,args):
+        jobs = cls.get_job_list()
         try:
             jobid=args.jobid[0]
         except:
@@ -126,12 +130,19 @@ while [ -e /proc/$pid ]; do sleep 5; done
                 jobid=args.jobid
             except:
                 jobid=None
-            jobid=None
+        if jobid != None:
+            for j in jobs:
+                if str(jobid) in j.jobid and j.jobstate != 'R':
+                    raise SmuxConnectionError("You're session hasn't started yet")
         if jobid == None:
             jobs = cls.get_job_list()
             if len(jobs) == 1:
                 if jobs[0].jobstate == 'R':
                     jobid=jobs[0].jobid
+                else:
+                    raise SmuxConnectionError("You're session hasn't started yet")
+        if jobid == None:
+            raise SmuxConnectionError("I couldn't figure out what you were trying to connect to, try specifying a jobid")
         cls.connect_job(jobid)
 
     @classmethod
@@ -142,8 +153,6 @@ while [ -e /proc/$pid ]; do sleep 5; done
             output=subprocess.check_output(['squeue','-h','-o','%i %j']).splitlines()
         for lb in output:
             l=lb.decode('utf-8')
-            print(l)
-            print(string)
             if string in l:
                 jobid=l.split(' ')[0]
                 return int(jobid)
@@ -175,7 +184,7 @@ while [ -e /proc/$pid ]; do sleep 5; done
         subparser = parser.add_subparsers()
         connect=subparser.add_parser('attach-session',aliases=['a'])
         connect.add_argument('jobid',metavar="<jobid>",default=[None], type=lambda x: Smux.jobid(user,x),nargs='?',help="A job ID or job name")
-        connect.add_argument('-t','--target')
+        connect.add_argument('-t','--target',action='store_true')
         connect.set_defaults(func=Smux.connectJob)
         new=subparser.add_parser('new-session',aliases=['n'])
         new.add_argument('--ntasks',type=int, default=[1], metavar="<n>",nargs=1,help="The number of tasks you will launch")
@@ -196,6 +205,8 @@ while [ -e /proc/$pid ]; do sleep 5; done
         args=parser.parse_args()
         try:
             args.func(args)
+        except SmuxConnectionError as e:
+            print(e)
         except Exception as e:
             print(e)
             import traceback
