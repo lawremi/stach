@@ -96,6 +96,8 @@ while [ -e /proc/$pid ]; do sleep 5; done
             command.append("--mem={}".format(args.mem[0]))
         if args.gres[0] != None:
             command.append("--gres={}".format(args.gres[0]))
+        if args.time[0] != None:
+            command.append("--time={}".format(args.time[0]))
         p = subprocess.Popen(command, stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         (stdout,stderr) = p.communicate(cls.slurm_script)
         jobs = cls.get_job_list()
@@ -194,6 +196,7 @@ while [ -e /proc/$pid ]; do sleep 5; done
         new.add_argument('-J','--jobname', default=["interactive_session"], metavar="<n>",nargs=1,help="The number of cpus to request")
         new.add_argument('-p','--partition',default=[None],nargs=1,help="The partition to execute on")
         new.add_argument('-r','--reservation',default=[None],nargs=1,help="The reserveration to use")
+        new.add_argument('-t','--time',default=[None],nargs=1,help="The to run for")
         new.add_argument('--gres',default=[None], metavar="<n>",nargs=1,help="The type and number of gpus needed for each task")
         new.set_defaults(func=Smux.newJob)
         listjobs=subparser.add_parser('list-sessions',aliases=['l'])
