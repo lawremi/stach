@@ -17,7 +17,7 @@ class SlurmJob():
         self.jobstate=jobstate
 
 class Smux():
-    slurm_script="""#!/bin/bash
+    slurm_script=b"""#!/bin/bash
 tmux new-session -d -s $SLURM_JOB_NAME bash
 # determine the process id of the tmux server
 pid=$( /bin/ps x | /bin/grep -i "[t]mux new-session -d -s" | sed 's/^\ *//' | cut -f 1 -d " " )
@@ -30,12 +30,12 @@ while [ -e /proc/$pid ]; do sleep 5; done
     @classmethod
     def get_node(cls,jobid):
         output = subprocess.check_output(['squeue','--job',"%s"%jobid,'-o','%B','-h'])
-        return output.strip()
+        return output.decode('utf-8').strip()
 
     @classmethod
     def get_job_name(cls,jobid):
         output = subprocess.check_output(['squeue','--job',"%s"%jobid,'-o','%j','-h'])
-        return output.strip()
+        return output.decode('utf-8').strip()
         
     @classmethod
     def whyAreWeWaiting(cls,args):
@@ -52,7 +52,7 @@ while [ -e /proc/$pid ]; do sleep 5; done
         (stdout,stderr) = p.communicate()
         jobs=[]
         for l in stdout.splitlines():
-            data = l.split(',')
+            data = l.decode("utf-8").split(',')
             jobs.append(SlurmJob(data[0],data[1],data[2]))
         return jobs
 
@@ -63,12 +63,12 @@ while [ -e /proc/$pid ]; do sleep 5; done
         print("You have the following running jobs:")
         print("Job ID\tJob Name")
         for j in filter(lambda x: x.jobstate=='R', joblist):
-            print("{}\t{}").format(j.jobid,j.jobname)
+            print("{}\t{}".format(j.jobid,j.jobname))
         print("")
         print("You have the following not yet started jobs:")
         print("Job ID\tJob Name")
         for j in filter(lambda x: not (x.jobstate=='R'), joblist):
-            print("{}\t{}").format(j.jobid,j.jobname)
+            print("{}\t{}".format(j.jobid,j.jobname))
         print("")
         print("Use the command {} attach-session <jobid> or {} attach-session <jobname> to connect".format(cls.programname,cls.programname))
         print("Or use the command {} new-session to start a new interactive session".format(cls.programname))
@@ -89,12 +89,12 @@ while [ -e /proc/$pid ]; do sleep 5; done
             command.append("--cpus-per-task={}".format(args.cpuspertask[0]))
         if args.nodes[0] != None:
             command.append("--nodes={}".format(args.nodes[0]))
+        if args.mem[0] != None:
+            command.append("--mem={}".format(args.mem[0]))
         if args.gres[0] != None:
             command.append("--gres={}".format(args.gres[0]))
         p = subprocess.Popen(command, stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         (stdout,stderr) = p.communicate(cls.slurm_script)
-        print(stdout)
-        print(stderr)
         jobs = cls.get_job_list()
         if len(jobs) == 1:
             time.sleep(2)
@@ -119,7 +119,19 @@ while [ -e /proc/$pid ]; do sleep 5; done
 
     @classmethod
     def connectJob(cls,args):
-        jobid=args.jobid[0]
+        try:
+            jobid=args.jobid[0]
+        except:
+            try:
+                jobid=args.jobid
+            except:
+                jobid=None
+            jobid=None
+        if jobid == None:
+            jobs = cls.get_job_list()
+            if len(jobs) == 1:
+                if jobs[0].jobstate == 'R':
+                    jobid=jobs[0].jobid
         cls.connect_job(jobid)
 
     @classmethod
@@ -128,10 +140,13 @@ while [ -e /proc/$pid ]; do sleep 5; done
             output=subprocess.check_output(['squeue','-u',user,'-h','-o','%i %j']).splitlines()
         else:
             output=subprocess.check_output(['squeue','-h','-o','%i %j']).splitlines()
-        for l in output:
+        for lb in output:
+            l=lb.decode('utf-8')
+            print(l)
+            print(string)
             if string in l:
                 jobid=l.split(' ')[0]
-                return jobid
+                return int(jobid)
         msg="%s is not a job id or a job name"%string
         raise argparse.ArgumentTypeError(msg)
 
@@ -151,24 +166,28 @@ while [ -e /proc/$pid ]; do sleep 5; done
 
                 Use "%(prog)s new-session" to create a new session
                 Use "%(prog)s list-sessions" to list existing sessions
-                Use "%(prog)s attach-session <ID>" to connect to an existing session
+                Use "%(prog)s attach-session -t <ID>" to connect to an existing session
 
                 When in a session, use the keys control+b then press d to dettach from the session
+
+                Short forms (n, l and a) are also accepted. <ID> is optional if you only have one job.
                 '''))
         subparser = parser.add_subparsers()
-        connect=subparser.add_parser('attach-session')
-        connect.add_argument('jobid',metavar="<jobid>", type=lambda x: Smux.jobid(user,x),nargs=1,help="A job ID or job name")
+        connect=subparser.add_parser('attach-session',aliases=['a'])
+        connect.add_argument('jobid',metavar="<jobid>",default=[None], type=lambda x: Smux.jobid(user,x),nargs='?',help="A job ID or job name")
+        connect.add_argument('-t','--target')
         connect.set_defaults(func=Smux.connectJob)
-        new=subparser.add_parser('new-session')
+        new=subparser.add_parser('new-session',aliases=['n'])
         new.add_argument('--ntasks',type=int, default=[1], metavar="<n>",nargs=1,help="The number of tasks you will launch")
         new.add_argument('--nodes',type=int, default=[None], metavar="<n>",nargs=1,help="The number of nodes you need")
+        new.add_argument('--mem',type=int, default=[None], metavar="<n>",nargs=1,help="The amount of memory you need")
         new.add_argument('--cpuspertask',type=int, default=[None], metavar="<n>",nargs=1,help="The number of cpus needed for each task")
         new.add_argument('-J','--jobname', default=["interactive_session"], metavar="<n>",nargs=1,help="The number of cpus to request")
         new.add_argument('-p','--partition',default=[None],nargs=1,help="The partition to execute on")
         new.add_argument('-r','--reservation',default=[None],nargs=1,help="The reserveration to use")
         new.add_argument('--gres',default=[None], metavar="<n>",nargs=1,help="The type and number of gpus needed for each task")
         new.set_defaults(func=Smux.newJob)
-        listjobs=subparser.add_parser('list-sessions')
+        listjobs=subparser.add_parser('list-sessions',aliases=['l'])
         listjobs.set_defaults(func=lambda x: Smux.listJobs(user,x))
         waiting=subparser.add_parser('why-are-we-waiting')
         waiting.add_argument('jobid',metavar="<jobid>", type=lambda x: Smux.jobid(user,x),nargs=1,help="A job ID or job name")
@@ -178,4 +197,7 @@ while [ -e /proc/$pid ]; do sleep 5; done
         try:
             args.func(args)
         except Exception as e:
+            print(e)
+            import traceback
+            print(traceback.format_exc())
             parser.print_help()
