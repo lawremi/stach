@@ -98,6 +98,20 @@ while [ -e /proc/$pid ]; do sleep 5; done
             command.append("--gres={}".format(args.gres[0]))
         if args.time[0] != None:
             command.append("--time={}".format(args.time[0]))
+
+        '''This section appends the --output and --error to the command'''
+
+        command.append("--output={}".format(args.output[0]))
+        command.append("--error={}".format(args.error[0]))
+
+        '''And this section appends --export=NONE, which will make sure that the user env variables 
+        are not propagated to the batch job
+        '''
+
+        command.append("--export=NONE")
+
+        '''Now we start!'''
+
         p = subprocess.Popen(command, stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         (stdout,stderr) = p.communicate(cls.slurm_script)
         jobs = cls.get_job_list()
@@ -195,9 +209,11 @@ while [ -e /proc/$pid ]; do sleep 5; done
         new.add_argument('--cpuspertask',type=int, default=[None], metavar="<n>",nargs=1,help="The number of cpus needed for each task")
         new.add_argument('-J','--jobname', default=["interactive_session"], metavar="<n>",nargs=1,help="The number of cpus to request")
         new.add_argument('-p','--partition',default=[None],nargs=1,help="The partition to execute on")
-        new.add_argument('-r','--reservation',default=[None],nargs=1,help="The reserveration to use")
-        new.add_argument('-t','--time',default=[None],nargs=1,help="The to run for")
+        new.add_argument('-r','--reservation',default=[None],nargs=1,help="The reservation to use")
+        new.add_argument('-t','--time',default=[None],nargs=1,help="The amount of time to run for")
         new.add_argument('--gres',default=[None], metavar="<n>",nargs=1,help="The type and number of gpus needed for each task")
+        new.add_argument('-o','--output',default=["smux-%j.out"], metavar="<n>",nargs=1,help="Standard output file name")
+        new.add_argument('-e','--error', default=["smux-%j.err"], metavar="<n>",nargs=1,help="Error output file name")
         new.set_defaults(func=Smux.newJob)
         listjobs=subparser.add_parser('list-sessions',aliases=['l'])
         listjobs.set_defaults(func=lambda x: Smux.listJobs(user,x))
