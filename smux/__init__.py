@@ -80,6 +80,7 @@ while [ -e /proc/$pid ]; do sleep 5; done
     @classmethod
     def newJob(cls,args):
         import time
+        import sys
         command = ['sbatch',
                 "--ntasks={}".format(args.ntasks[0]),
                 "-J {}".format(args.jobname[0])
@@ -114,13 +115,31 @@ while [ -e /proc/$pid ]; do sleep 5; done
 
         p = subprocess.Popen(command, stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         (stdout,stderr) = p.communicate(cls.slurm_script)
+        print("Requesting an interactive session")
+        jobs = cls.get_job_list()
+        if len(jobs) == 0:
+            time.sleep(1)
         jobs = cls.get_job_list()
         if len(jobs) == 1:
+            print("Waiting to see if your interactive session starts",end='')
+            sys.stdout.flush()
             time.sleep(2)
             jobs = cls.get_job_list()
             if jobs[0].jobstate == 'R':
                 cls.connect_job(jobs[0].jobid)
             else:
+                # Loop for up to 20 seconds waiting for the job to start
+                count=1
+                while count<10:
+                    jobs = cls.get_job_list()
+                    if len(jobs) == 1:
+                        if jobs[0].jobstate == 'R':
+                            cls.connect_job(jobs[0].jobid)
+                    time.sleep(2)
+                    count=count+1
+                    print('.',end='')
+                    sys.stdout.flush()
+                print("")
                 print("I can't connect you straight to your session because it hasn't started yet")
                 print("use smux list-sessions to determine when it starts and")
                 print("smux attach-session <jobid> to connect once it has started")
@@ -132,8 +151,10 @@ while [ -e /proc/$pid ]; do sleep 5; done
 
     @classmethod
     def connect_job(cls,jobid):
+        import time
         node=cls.get_node(jobid)
         name=cls.get_job_name(jobid)
+        time.sleep(1)
         os.execv("/usr/bin/ssh",["ssh",node,"-t","tmux attach-session -t %s"%name])
 
     @classmethod
@@ -196,6 +217,9 @@ while [ -e /proc/$pid ]; do sleep 5; done
                 When in a session, use the keys control+b then press d to dettach from the session
 
                 Short forms (n, l and a) are also accepted. <ID> is optional if you only have one job.
+
+                For more detailed help on each subcommand you can %(prog)s <subcommand> --help, 
+                for example %(prog)s n --help will display additional options for starting a new session
                 '''))
         subparser = parser.add_subparsers()
         connect=subparser.add_parser('attach-session',aliases=['a'])
