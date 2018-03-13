@@ -234,7 +234,7 @@ while [ -e /proc/$pid ]; do sleep 5; done
         new.add_argument('--mem',type=int, default=[None], metavar="<n>",nargs=1,help="The amount of memory you need")
         new.add_argument('--cpuspertask',type=int, default=[None], metavar="<n>",nargs=1,help="The number of cpus needed for each task")
         new.add_argument('-J','--jobname', default=["interactive_session"], metavar="<n>",nargs=1,help="The name of your job")
-        new.add_argument('-A','--account', default=["interactive_session"], metavar="<n>",nargs=1,help="Specify your account")
+        new.add_argument('-A','--account', default=[None], metavar="<n>",nargs=1,help="Specify your account")
         new.add_argument('-p','--partition',default=[None],nargs=1,help="The partition to execute on")
         new.add_argument('-r','--reservation',default=[None],nargs=1,help="The reservation to use")
         new.add_argument('-t','--time',default=[None],nargs=1,help="The amount of time to run for")
