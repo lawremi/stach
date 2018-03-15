@@ -107,12 +107,6 @@ while [ -e /proc/$pid ]; do sleep 5; done
         command.append("--output={}".format(args.output[0]))
         command.append("--error={}".format(args.error[0]))
 
-        '''And this section appends --export=NONE, which will make sure that the user env variables 
-        are not propagated to the batch job
-        '''
-
-        command.append("--export=NONE")
-
         '''Now we start!'''
 
         p = subprocess.Popen(command, stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
