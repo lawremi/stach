@@ -232,7 +232,7 @@ while [ -e /proc/$pid ]; do sleep 5; done
         new.add_argument('-p','--partition',default=[None],nargs=1,help="The partition to execute on")
         new.add_argument('-r','--reservation',default=[None],nargs=1,help="The reservation to use")
         new.add_argument('-t','--time',default=[None],nargs=1,help="The amount of time to run for")
-        new.add_argument('--gres',default=[None], metavar="<n>",nargs=1,help="The type and number of gpus needed for each task")
+        new.add_argument('--gres=',default=[None], metavar="<n>",nargs=1,help="The type and number of gpus needed for each task")
         new.add_argument('-o','--output',default=["smux-%j.out"], metavar="<n>",nargs=1,help="Standard output file name")
         new.add_argument('-e','--error', default=["smux-%j.err"], metavar="<n>",nargs=1,help="Error output file name")
         new.set_defaults(func=Smux.newJob)
