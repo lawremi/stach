@@ -166,14 +166,14 @@ while [ -e /proc/$pid ]; do sleep 5; done
         if jobid != None:
             for j in jobs:
                 if str(jobid) in j.jobid and j.jobstate != 'R':
-                    raise SmuxConnectionError("You're session hasn't started yet")
+                    raise SmuxConnectionError("Your session hasn't started yet")
         if jobid == None:
             jobs = cls.get_job_list()
             if len(jobs) == 1:
                 if jobs[0].jobstate == 'R':
                     jobid=jobs[0].jobid
                 else:
-                    raise SmuxConnectionError("You're session hasn't started yet")
+                    raise SmuxConnectionError("Your session hasn't started yet")
         if jobid == None:
             raise SmuxConnectionError("I couldn't figure out what you were trying to connect to, try specifying a jobid")
         cls.connect_job(jobid)
