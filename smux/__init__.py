@@ -225,7 +225,7 @@ while [ -e /proc/$pid ]; do sleep 5; done
         new=subparser.add_parser('new-session',aliases=['n'])
         new.add_argument('--ntasks',type=int, default=[1], metavar="<n>",nargs=1,help="The number of tasks you will launch")
         new.add_argument('--nodes',type=int, default=[None], metavar="<n>",nargs=1,help="The number of nodes you need")
-        new.add_argument('--mem',type=int, default=[None], metavar="<n>",nargs=1,help="The amount of memory you need")
+        new.add_argument('--mem', default=[None], metavar="<n>",nargs=1,help="The amount of memory you need")
         new.add_argument('--cpuspertask',type=int, default=[None], metavar="<n>",nargs=1,help="The number of cpus needed for each task")
         new.add_argument('-J','--jobname', default=["interactive_session"], metavar="<n>",nargs=1,help="The name of your job")
         new.add_argument('-A','--account', default=[None], metavar="<n>",nargs=1,help="Specify your account")
