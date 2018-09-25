@@ -99,6 +99,8 @@ while [ -e /proc/$pid ]; do sleep 5; done
             command.append("--mem={}".format(args.mem[0]))
         if args.gres[0] != None:
             command.append("--gres={}".format(args.gres[0]))
+        if args.qos[0] != None:
+            command.append("--qos={}".format(args.qos[0]))
         if args.time[0] != None:
             command.append("--time={}".format(args.time[0]))
 
@@ -112,6 +114,8 @@ while [ -e /proc/$pid ]; do sleep 5; done
         p = subprocess.Popen(command, stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         (stdout,stderr) = p.communicate(cls.slurm_script)
         print("Requesting an interactive session")
+        if stderr is not None and len(stderr) > 0:
+            print(stderr)
         jobs = cls.get_job_list()
         if len(jobs) == 0:
             time.sleep(1)
@@ -227,12 +231,13 @@ while [ -e /proc/$pid ]; do sleep 5; done
         new.add_argument('--nodes',type=int, default=[None], metavar="<n>",nargs=1,help="The number of nodes you need")
         new.add_argument('--mem', default=[None], metavar="<n>",nargs=1,help="The amount of memory you need")
         new.add_argument('--cpuspertask',type=int, default=[None], metavar="<n>",nargs=1,help="The number of cpus needed for each task")
+        new.add_argument('--qos', default=[None], metavar="<n>",nargs=1,help="The QoS (Quality of Service) used for the task (certain QoS are only valid on some partitiotns)")
         new.add_argument('-J','--jobname', default=["interactive_session"], metavar="<n>",nargs=1,help="The name of your job")
         new.add_argument('-A','--account', default=[None], metavar="<n>",nargs=1,help="Specify your account")
         new.add_argument('-p','--partition',default=[None],nargs=1,help="The partition to execute on")
         new.add_argument('-r','--reservation',default=[None],nargs=1,help="The reservation to use")
         new.add_argument('-t','--time',default=[None],nargs=1,help="The amount of time to run for")
-        new.add_argument('--gres=',default=[None], metavar="<n>",nargs=1,help="The type and number of gpus needed for each task")
+        new.add_argument('--gres',default=[None], metavar="<n>",nargs=1,help="The type and number of gpus needed for each task")
         new.add_argument('-o','--output',default=["smux-%j.out"], metavar="<n>",nargs=1,help="Standard output file name")
         new.add_argument('-e','--error', default=["smux-%j.err"], metavar="<n>",nargs=1,help="Error output file name")
         new.set_defaults(func=Smux.newJob)
