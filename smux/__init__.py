@@ -115,7 +115,7 @@ while [ -e /proc/$pid ]; do sleep 5; done
         (stdout,stderr) = p.communicate(cls.slurm_script)
         print("Requesting an interactive session")
         if stderr is not None and len(stderr) > 0:
-            print(stderr)
+            print(stderr.decode())
         jobs = cls.get_job_list()
         if len(jobs) == 0:
             time.sleep(1)
@@ -143,6 +143,13 @@ while [ -e /proc/$pid ]; do sleep 5; done
                 print("I can't connect you straight to your session because it hasn't started yet")
                 print("use smux list-sessions to determine when it starts and")
                 print("smux attach-session <jobid> to connect once it has started")
+        elif len(jobs) == 0:
+            print("Your job failed to submit for some reason.")
+            print("Please look above for any error messages from sbatch")
+            print("One possibility is you asked for an invalid combination of resources")
+            print("Another option is that you made a typo in the command line")
+            print("Either way plese try options one at a time.")
+            print("If all else fails submit a help request to help@massive.org.au")
         else:
             print("I can't connect you straight to your session because you have more than one session running")
             print("use smux list-sessions to list your sessions")
