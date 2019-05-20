@@ -1,3 +1,16 @@
+smux
+====
+
+smux is a wrapper around slurm and tmux. It allows tmux sessions to
+run on a compute node under a slurm job and takes care of deternining 
+which compute node the job is on and running ssh. Its supposed to be simliar to
+tmux, but with slurm job ids or names instead of tmux session names.
+
+It replaces sinteractive.
+smux supports a lot of slurm sbatch options but not all of them. You can add them
+pretty easily by looking at the code, I've only added the ones asked for
+
+
 Installation
 ============
 
@@ -8,10 +21,5 @@ If you don't increment the version in setup.py you may want to
 
 `pip install --upgrade --force-reinstall https://gitlab.erc.monash.edu.au/hpc-team/smux.git`
 
-
-Use
-===
-
-Use `sbatch ./120gb` to start the session, then `smux attach-session` to attach to it. The sbatch part should be integrated into smux new-session
 
 
