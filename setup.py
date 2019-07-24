@@ -18,7 +18,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='smux',
+    name='stach',
     setup_requires=[],
     desktop_entries={
         },
@@ -29,7 +29,7 @@ setup(
     long_description=long_description,
 
     # The project's main homepage.
-    url='https://gitlab.erc.monash.edu.au/hpc-team/smux',
+    url='https://github.com/lawremi/stach',
 
     # Author details
     author='Chris Hines',
@@ -65,7 +65,7 @@ setup(
     ],
 
     # What does your project relate to?
-    keywords='ssh SLURM interactive',
+    keywords='ssh SLURM interactive dtach tmux',
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().

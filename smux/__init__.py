@@ -5,6 +5,8 @@ import subprocess
 import argparse
 import getpass
 
+import abc
+
 
 class SlurmJob():
     jobid=None
@@ -19,7 +21,31 @@ class SlurmJob():
 class SmuxConnectionError(Exception):
     pass
 
-class Smux():
+class SessionDriver():
+    @abc.abstractmethod
+    def get_new_session_script(self):
+        return
+
+    @abc.abstractmethod
+    def get_attach_command(self):
+        return
+
+class DtachDriver():
+    dtach_socket_dir="~/.local/share/stach/"
+    dtach_socket=dtach_socket_dir+"$SLURM_JOB_NAME"
+    slurm_script="""#!/bin/bash
+dtach -n "${0}" bash
+# Sleep until the dtach server exits
+while [ -e "${0}" ]; do sleep 5; done
+""".format(dtach_socket).encode()
+
+    def get_new_session_script(self):
+        return self.slurm_script
+
+    def get_attach_command(self, name):
+        return "dtach -a %s"%dtach_socket_dir+name
+
+class TmuxDriver():
     slurm_script=b"""#!/bin/bash
 tmux new-session -d -s $SLURM_JOB_NAME bash
 # determine the process id of the tmux server
@@ -28,6 +54,13 @@ ps x
 # Sleep until the tmux server exits
 while [ -e /proc/$pid ]; do sleep 5; done
 """
+    def get_new_session_script(self):
+        return slurm_script
+
+    def get_attach_command(self, name):
+        "tmux attach-session -t %s"%name
+
+class Smux():
     ALLUSERS=False
     programname='smux'
     @classmethod
@@ -112,7 +145,7 @@ while [ -e /proc/$pid ]; do sleep 5; done
         '''Now we start!'''
 
         p = subprocess.Popen(command, stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        (stdout,stderr) = p.communicate(cls.slurm_script)
+        (stdout,stderr) = p.communicate(args.driver.get_new_session_script())
         print("Requesting an interactive session")
         if stderr is not None and len(stderr) > 0:
             print(stderr.decode())
@@ -126,7 +159,7 @@ while [ -e /proc/$pid ]; do sleep 5; done
             time.sleep(2)
             jobs = cls.get_job_list()
             if jobs[0].jobstate == 'R':
-                cls.connect_job(jobs[0].jobid)
+                cls.connect_job(args.driver, jobs[0].jobid)
             else:
                 # Loop for up to 20 seconds waiting for the job to start
                 count=1
@@ -134,7 +167,7 @@ while [ -e /proc/$pid ]; do sleep 5; done
                     jobs = cls.get_job_list()
                     if len(jobs) == 1:
                         if jobs[0].jobstate == 'R':
-                            cls.connect_job(jobs[0].jobid)
+                            cls.connect_job(args.driver, jobs[0].jobid)
                     time.sleep(2)
                     count=count+1
                     print('.',end='')
@@ -157,12 +190,12 @@ while [ -e /proc/$pid ]; do sleep 5; done
 
 
     @classmethod
-    def connect_job(cls,jobid):
+    def connect_job(cls,driver,jobid):
         import time
         node=cls.get_node(jobid)
         name=cls.get_job_name(jobid)
         time.sleep(1)
-        os.execv("/usr/bin/ssh",["ssh",node,"-t","tmux attach-session -t %s"%name])
+        os.execv("/usr/bin/ssh",["ssh",node,"-t",driver.get_attach_command()])
 
     @classmethod
     def connectJob(cls,args):
@@ -187,7 +220,11 @@ while [ -e /proc/$pid ]; do sleep 5; done
                     raise SmuxConnectionError("Your session hasn't started yet")
         if jobid == None:
             raise SmuxConnectionError("I couldn't figure out what you were trying to connect to, try specifying a jobid")
-        cls.connect_job(jobid)
+        cls.connect_job(args.driver, jobid)
+
+    @classmethod
+    def driver(cls,name):
+        globals()[name.capitalize()+"Driver"]()
 
     @classmethod
     def jobid(cls,user,string):
@@ -228,6 +265,7 @@ while [ -e /proc/$pid ]; do sleep 5; done
                 For more detailed help on each subcommand you can %(prog)s <subcommand> --help, 
                 for example %(prog)s n --help will display additional options for starting a new session
                 '''))
+        parser.add_argument('-d','--driver',default=["dtach"],nargs=1,help="The session driver, either 'dtach' or 'tmux'", type=lambda x: Smux.driver(x))
         subparser = parser.add_subparsers()
         connect=subparser.add_parser('attach-session',aliases=['a'])
         connect.add_argument('jobid',metavar="<jobid>",default=[None], type=lambda x: Smux.jobid(user,x),nargs='?',help="A job ID or job name")
