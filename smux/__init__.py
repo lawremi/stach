@@ -226,7 +226,7 @@ class Smux():
 
     @classmethod
     def driver(cls,name):
-        globals()[name.capitalize()+"Driver"]()
+        return globals()[name.capitalize()+"Driver"]()
 
     @classmethod
     def jobid(cls,user,string):
@@ -266,9 +266,6 @@ class Smux():
 
                 For more detailed help on each subcommand you can %(prog)s <subcommand> --help, 
                 for example %(prog)s n --help will display additional options for starting a new session
-
-                Use --driver or -d to specify the session manager driver,
-                one of 'dtach' or 'tmux' (default: 'dtach')
                 '''))
         parser.add_argument('-d','--driver',default=[Smux.driver("dtach")],nargs=1,help="The session driver, either 'dtach' or 'tmux'", type=lambda x: Smux.driver(x))
         subparser = parser.add_subparsers()
