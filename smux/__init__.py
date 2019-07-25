@@ -256,16 +256,19 @@ class Smux():
                 description=textwrap.dedent('''\
                 A tool to created and reconnect to interactive sessions
 
-                Use "%(prog)s new-session" to create a new session
-                Use "%(prog)s list-sessions" to list existing sessions
-                Use "%(prog)s attach-session -t <ID>" to connect to an existing session
+                Use "%(prog)s new" to create a new session
+                Use "%(prog)s list" to list existing sessions
+                Use "%(prog)s attach -t <ID>" to connect to an existing session
 
                 When in a session, use the keys control+b then press d to dettach from the session
 
-                Short forms (n, l and a) are also accepted. <ID> is optional if you only have one job.
+                <ID> is optional if you only have one job.
 
                 For more detailed help on each subcommand you can %(prog)s <subcommand> --help, 
                 for example %(prog)s n --help will display additional options for starting a new session
+
+                Use --driver or -d to specify the session manager driver,
+                one of 'dtach' or 'tmux' (default: 'dtach')
                 '''))
         parser.add_argument('-d','--driver',default=["dtach"],nargs=1,help="The session driver, either 'dtach' or 'tmux'", type=lambda x: Smux.driver(x))
         subparser = parser.add_subparsers()
