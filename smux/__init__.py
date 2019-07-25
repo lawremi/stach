@@ -1,11 +1,11 @@
 #!/usr/bin/python
+from __future__ import print_function
+
 import os
 import sys
 import subprocess
 import argparse
 import getpass
-
-from __future__ import print_function
 
 import abc
 
