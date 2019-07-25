@@ -25,5 +25,16 @@ If you don't increment the version in `setup.py` you may want to
 
 `pip install --upgrade --force-reinstall https://github.com/lawremi/stach`
 
+Basic Usage
+============
 
+Start a new session:
+```
+stach new
+```
+
+Attach to running session:
+```
+stach attach
+```
 
