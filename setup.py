@@ -20,8 +20,6 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 setup(
     name='stach',
     setup_requires=[],
-    desktop_entries={
-        },
 
     version='0.0.1',
 
