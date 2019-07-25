@@ -147,7 +147,7 @@ class Smux():
         '''Now we start!'''
 
         p = subprocess.Popen(command, stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        (stdout,stderr) = p.communicate(args.driver.get_new_session_script())
+        (stdout,stderr) = p.communicate(args.driver[0].get_new_session_script())
         print("Requesting an interactive session")
         if stderr is not None and len(stderr) > 0:
             print(stderr.decode())
@@ -161,7 +161,7 @@ class Smux():
             time.sleep(2)
             jobs = cls.get_job_list()
             if jobs[0].jobstate == 'R':
-                cls.connect_job(args.driver, jobs[0].jobid)
+                cls.connect_job(args.driver[0], jobs[0].jobid)
             else:
                 # Loop for up to 20 seconds waiting for the job to start
                 count=1
@@ -169,7 +169,7 @@ class Smux():
                     jobs = cls.get_job_list()
                     if len(jobs) == 1:
                         if jobs[0].jobstate == 'R':
-                            cls.connect_job(args.driver, jobs[0].jobid)
+                            cls.connect_job(args.driver[0], jobs[0].jobid)
                     time.sleep(2)
                     count=count+1
                     print('.',end='')
