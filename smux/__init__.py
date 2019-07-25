@@ -270,7 +270,7 @@ class Smux():
                 Use --driver or -d to specify the session manager driver,
                 one of 'dtach' or 'tmux' (default: 'dtach')
                 '''))
-        parser.add_argument('-d','--driver',default=["dtach"],nargs=1,help="The session driver, either 'dtach' or 'tmux'", type=lambda x: Smux.driver(x))
+        parser.add_argument('-d','--driver',default=[Smux.driver("dtach")],nargs=1,help="The session driver, either 'dtach' or 'tmux'", type=lambda x: Smux.driver(x))
         subparser = parser.add_subparsers()
         connect=subparser.add_parser('attach')
         connect.add_argument('jobid',metavar="<jobid>",default=[None], type=lambda x: Smux.jobid(user,x),nargs='?',help="A job ID or job name")
