@@ -75,7 +75,7 @@ class Smux():
     @classmethod
     def get_job_name(cls,jobid):
         output = subprocess.check_output(['squeue','--job',"%s"%jobid,'-o','%j','-h'])
-        return output.decode('utf-8')
+        return output.decode('utf-8').strip()
         
     @classmethod
     def whyAreWeWaiting(cls,args):
@@ -120,7 +120,7 @@ class Smux():
         import sys
         command = ['sbatch',
                 "--ntasks={}".format(args.ntasks[0]),
-                "-J {}".format(args.jobname[0])
+                "-J{}".format(args.jobname[0])
                 ]
         if args.account[0] != None:
             command.append("--account={}".format(args.account[0]))
