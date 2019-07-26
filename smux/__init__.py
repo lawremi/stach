@@ -200,7 +200,7 @@ class Smux():
         name=cls.get_job_name(jobid)
         time.sleep(1)
         os.execv("/usr/bin/ssh",["ssh",node,"-t",
-                                 driver.get_attach_command(jobid)])
+                                 driver.get_attach_command(name)])
 
     @classmethod
     def connectJob(cls,args):
