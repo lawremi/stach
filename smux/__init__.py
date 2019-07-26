@@ -36,9 +36,9 @@ class DtachDriver(SessionDriver):
     dtach_socket_dir=os.path.expanduser("~/.local/share/stach")
     dtach_socket=os.path.join(dtach_socket_dir, "$SLURM_JOB_NAME")
     slurm_script="""#!/bin/bash
-dtach -n "${0}" bash
+dtach -n "{0}" bash
 # Sleep until the dtach server exits
-while [ -e "${0}" ]; do sleep 5; done
+while [ -e "{0}" ]; do sleep 5; done
 """.format(dtach_socket).encode()
 
     def get_new_session_script(self):
