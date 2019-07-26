@@ -75,7 +75,7 @@ class Smux():
     @classmethod
     def get_job_name(cls,jobid):
         output = subprocess.check_output(['squeue','--job',"%s"%jobid,'-o','%j','-h'])
-        return output.decode('utf-8').strip()
+        return output.decode('utf-8')
         
     @classmethod
     def whyAreWeWaiting(cls,args):
