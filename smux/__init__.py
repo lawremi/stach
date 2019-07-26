@@ -29,10 +29,10 @@ class SessionDriver():
         return
 
     @abc.abstractmethod
-    def get_attach_command(self):
+    def get_attach_command(self, name):
         return
 
-class DtachDriver():
+class DtachDriver(SessionDriver):
     dtach_socket_dir="~/.local/share/stach/"
     dtach_socket=dtach_socket_dir+"$SLURM_JOB_NAME"
     slurm_script="""#!/bin/bash
@@ -48,7 +48,7 @@ while [ -e "${0}" ]; do sleep 5; done
         os.makedirs(self.dtach_socket_dir, exist_ok=True)
         return "dtach -a %s"%self.dtach_socket_dir+name
 
-class TmuxDriver():
+class TmuxDriver(SessionDriver):
     slurm_script=b"""#!/bin/bash
 tmux new-session -d -s $SLURM_JOB_NAME bash
 # determine the process id of the tmux server
@@ -198,7 +198,8 @@ class Smux():
         node=cls.get_node(jobid)
         name=cls.get_job_name(jobid)
         time.sleep(1)
-        os.execv("/usr/bin/ssh",["ssh",node,"-t",driver.get_attach_command()])
+        os.execv("/usr/bin/ssh",["ssh",node,"-t",
+                                 driver.get_attach_command(jobid)])
 
     @classmethod
     def connectJob(cls,args):
