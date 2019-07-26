@@ -12,14 +12,14 @@ all of the credit goes to the smux project.
 Installation
 ============
 
-`pip install https://github.com/lawremi/stach`
+`pip install --user git+https://github.com/lawremi/stach`
 
 You probably want to create a virutalenv (say /usr/local/stach/0.0.1)
 before you do this.
 
 If you don't increment the version in `setup.py` you may want to
 
-`pip install --upgrade --force-reinstall https://github.com/lawremi/stach`
+`pip install --user --upgrade --force-reinstall git+https://github.com/lawremi/stach`
 
 Basic Usage
 ============
