@@ -33,8 +33,8 @@ class SessionDriver():
         return
 
 class DtachDriver(SessionDriver):
-    dtach_socket_dir="~/.local/share/stach/"
-    dtach_socket=dtach_socket_dir+"$SLURM_JOB_NAME"
+    dtach_socket_dir="~/.local/share/stach"
+    dtach_socket=os.path.join(dtach_socket_dir, "$SLURM_JOB_NAME")
     slurm_script="""#!/bin/bash
 dtach -n "${0}" bash
 # Sleep until the dtach server exits
@@ -45,8 +45,8 @@ while [ -e "${0}" ]; do sleep 5; done
         return self.slurm_script
 
     def get_attach_command(self, name):
-        os.makedirs(self.dtach_socket_dir, exist_ok=True)
-        return "dtach -a %s"%self.dtach_socket_dir+name
+        os.makedirs(os.path.expanduser(self.dtach_socket_dir), exist_ok=True)
+        return "dtach -a %s" % os.path.join(self.dtach_socket_dir, name)
 
 class TmuxDriver(SessionDriver):
     slurm_script=b"""#!/bin/bash
