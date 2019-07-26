@@ -225,7 +225,7 @@ class Smux():
                     raise SmuxConnectionError("Your session hasn't started yet")
         if jobid == None:
             raise SmuxConnectionError("I couldn't figure out what you were trying to connect to, try specifying a jobid")
-        cls.connect_job(args.driver, jobid)
+        cls.connect_job(args.driver[0], jobid)
 
     @classmethod
     def driver(cls,name):
