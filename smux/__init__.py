@@ -51,7 +51,10 @@ while [ -e "{0}" ]; do sleep 5; done
         return self.slurm_script
 
     def get_attach_command(self, name):
-        return "dtach -a %s" % os.path.join(self.dtach_socket_dir, name)
+        socket = os.path.join(self.dtach_socket_dir, name)
+        if not os.path.exists(socket):
+            raise SmuxConnectionError("session {0} does not exist").format(name)
+        return "dtach -A %s" % socket
 
 class TmuxDriver(SessionDriver):
     slurm_script=b"""#!/bin/bash
