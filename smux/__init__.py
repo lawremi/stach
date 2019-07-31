@@ -76,7 +76,7 @@ class Smux():
     @classmethod
     def get_job_name(cls,jobid):
         output = subprocess.check_output(['squeue','--job',"%s"%jobid,'-o','%j','-h'])
-        return output.decode('utf-8')
+        return output.decode('utf-8').strip()
         
     @classmethod
     def whyAreWeWaiting(cls,args):
@@ -179,8 +179,8 @@ class Smux():
                     sys.stdout.flush()
                 print("")
                 print("I can't connect you straight to your session because it hasn't started yet")
-                print("use stach list-sessions to determine when it starts and")
-                print("stach attach-session <jobid> to connect once it has started")
+                print("use stach list to determine when it starts and")
+                print("stach attach <jobid> to connect once it has started")
         elif len(jobs) == 0:
             print("Your job failed to submit for some reason.")
             print("Please look above for any error messages from sbatch")
@@ -190,7 +190,7 @@ class Smux():
             print("If all else fails submit a help request to help@massive.org.au")
         else:
             print("I can't connect you straight to your session because you have more than one session running")
-            print("use stach list-sessions to list your sessions")
+            print("use stach list to list your sessions")
             print("stach attach-session <jobid> to connect to the correct session")
 
 
