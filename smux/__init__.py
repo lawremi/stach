@@ -36,10 +36,6 @@ class DtachDriver(SessionDriver):
     dtach_socket_dir=os.path.expanduser("~/.local/share/stach")
     dtach_socket=os.path.join(dtach_socket_dir, "$SLURM_JOB_NAME")
     slurm_script="""#!/bin/bash
-if test -e "{0}"; then 
-    printf '%s\n' "Session of same name already exists" >&2
-    echo 1
-fi
 dtach -n "{0}" bash
 # Sleep until the dtach server exits
 while [ -e "{0}" ]; do sleep 5; done
@@ -51,9 +47,6 @@ while [ -e "{0}" ]; do sleep 5; done
         return self.slurm_script
 
     def get_attach_command(self, name):
-        socket = os.path.join(self.dtach_socket_dir, name)
-        if not os.path.exists(socket):
-            raise SmuxConnectionError("session {0} does not exist").format(name)
         return "dtach -A %s" % socket
 
 class TmuxDriver(SessionDriver):
