@@ -178,8 +178,8 @@ class Smux():
                     sys.stdout.flush()
                 print("")
                 print("I can't connect you straight to your session because it hasn't started yet")
-                print("use smux list-sessions to determine when it starts and")
-                print("smux attach-session <jobid> to connect once it has started")
+                print("use stach list-sessions to determine when it starts and")
+                print("stach attach-session <jobid> to connect once it has started")
         elif len(jobs) == 0:
             print("Your job failed to submit for some reason.")
             print("Please look above for any error messages from sbatch")
@@ -189,8 +189,8 @@ class Smux():
             print("If all else fails submit a help request to help@massive.org.au")
         else:
             print("I can't connect you straight to your session because you have more than one session running")
-            print("use smux list-sessions to list your sessions")
-            print("smux attach-session <jobid> to connect to the correct session")
+            print("use stach list-sessions to list your sessions")
+            print("stach attach-session <jobid> to connect to the correct session")
 
 
     @classmethod
@@ -288,8 +288,8 @@ class Smux():
         new.add_argument('-r','--reservation',default=[None],nargs=1,help="The reservation to use")
         new.add_argument('-t','--time',default=[None],nargs=1,help="The amount of time to run for")
         new.add_argument('--gres',default=[None], metavar="<n>",nargs=1,help="The type and number of gpus needed for each task")
-        new.add_argument('-o','--output',default=["smux-%j.out"], metavar="<n>",nargs=1,help="Standard output file name")
-        new.add_argument('-e','--error', default=["smux-%j.err"], metavar="<n>",nargs=1,help="Error output file name")
+        new.add_argument('-o','--output',default=["stach-%j.out"], metavar="<n>",nargs=1,help="Standard output file name")
+        new.add_argument('-e','--error', default=["stach-%j.err"], metavar="<n>",nargs=1,help="Error output file name")
         new.set_defaults(func=Smux.newJob)
         listjobs=subparser.add_parser('list')
         listjobs.set_defaults(func=lambda x: Smux.listJobs(user,x))
