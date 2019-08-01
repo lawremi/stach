@@ -9,6 +9,7 @@ import getpass
 
 import abc
 
+import json
 
 class SlurmJob():
     jobid=None
@@ -256,7 +257,13 @@ class Smux():
         cls.programname=os.path.basename(sys.argv[0])
         cls.ALLUSERS=False
         user=getpass.getuser()
-        parser=argparse.ArgumentParser(prog=cls.programname,formatter_class=argparse.RawDescriptionHelpFormatter,
+        config_path=os.path.expanduser("~/.local/config/stach/config.json")
+        defaults={}
+        if os.path.exists(config_path):
+            with open(config_path) as config_file:
+                config=json.load(config_file)
+                defaults=config.get('defaults', {})
+        parser=argparse.ArgumentParser(prog=cls.psrogramname,formatter_class=argparse.RawDescriptionHelpFormatter,
                 description=textwrap.dedent('''\
                 A tool to created and reconnect to interactive sessions
 
@@ -282,7 +289,7 @@ class Smux():
         new.add_argument('--nodes',type=int, default=[None], metavar="<n>",nargs=1,help="The number of nodes you need")
         new.add_argument('--mem', default=[None], metavar="<n>",nargs=1,help="The amount of memory you need")
         new.add_argument('--cpuspertask',type=int, default=[None], metavar="<n>",nargs=1,help="The number of cpus needed for each task")
-        new.add_argument('--qos', default=[None], metavar="<n>",nargs=1,help="The QoS (Quality of Service) used for the task (certain QoS are only valid on some partitiotns)")
+        new.add_argument('--qos', default=[defaults.get('qos')], metavar="<n>",nargs=1,help="The QoS (Quality of Service) used for the task (certain QoS are only valid on some partitiotns)")
         new.add_argument('-J','--jobname', default=["interactive_session"], metavar="<n>",nargs=1,help="The name of your job")
         new.add_argument('-A','--account', default=[None], metavar="<n>",nargs=1,help="Specify your account")
         new.add_argument('-p','--partition',default=[None],nargs=1,help="The partition to execute on")
