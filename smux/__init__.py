@@ -263,7 +263,7 @@ class Smux():
             with open(config_path) as config_file:
                 config=json.load(config_file)
                 defaults=config.get('defaults', {})
-        parser=argparse.ArgumentParser(prog=cls.psrogramname,formatter_class=argparse.RawDescriptionHelpFormatter,
+        parser=argparse.ArgumentParser(prog=cls.programname,formatter_class=argparse.RawDescriptionHelpFormatter,
                 description=textwrap.dedent('''\
                 A tool to created and reconnect to interactive sessions
 
